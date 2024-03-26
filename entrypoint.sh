@@ -1,6 +1,5 @@
 #!/bin/sh -l
 
-git --version
-jq --version
+echo "$INPUG_REPOSITORIES"
 
 exit 0

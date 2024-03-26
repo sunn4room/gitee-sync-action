@@ -12,3 +12,9 @@ jobs:
     steps:
       - name: sync
         uses: sunn4room/gitee-sync-action@main
+        with:
+          username: ${{ secrets.GITEE_USERNAME }}
+          password: ${{ secrets.GITEE_PASSWORD }}
+          repositories: |
+            sunn4mirror
+            sunn4import

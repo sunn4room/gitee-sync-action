@@ -1,6 +1,14 @@
 name: Gitee Sync Action
 author: sunn4room
 
+inputs:
+  username:
+    required: true
+  password:
+    required: true
+  repositories:
+    required: true
+
 runs:
   using: docker
   image: Dockerfile
