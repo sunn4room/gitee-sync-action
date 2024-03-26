@@ -11,7 +11,7 @@ parse_repo() {
 			COUNT=$((COUNT + 1))
 			OUTPUT="$(curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name)"
 			printf '%s\n' "$OUTPUT"
-			if test "$(printf '%s' "$OUTPUT" | wc -l)" -lt "100"; then
+			if test "$(printf '%s\n' "$OUTPUT" | wc -l)" -lt "100"; then
 				break
 			fi
 		done
@@ -46,8 +46,8 @@ mirror_repo() {
 # main
 RETURN_CODE=0
 git config --global init.defaultBranch main >/dev/null
-printf '%s' "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
-	parse_repo "$LINE" | while IFS= read -r REPO; do
+for LINE in $(printf '%s' "$INPUT_REPOSITORIES"); do
+	for REPO in $(parse_repo "$LINE"); do
 		mirror_repo "${REPO}"
 	done
 done
