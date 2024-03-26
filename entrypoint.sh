@@ -28,16 +28,20 @@ mirror_repo() {
 	git init >/dev/null
 	git remote add source "$SOURCE_REPO" >/dev/null
 	git fetch --all >/dev/null 2>&1 \
-		&& printf 'pull done\n' \
-		|| printf '::error::pull failed\n' && return
+	&& printf 'pull done\n' \
+	|| {
+		printf '::error::pull failed\n' && return
+	}
 	git branch -a | grep remotes | grep -v HEAD | while IFS= read -r BRANCH; do
 		git branch --track "${BRANCH##*/}" "$BRANCH" >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
 	git push --all --force gitee >/dev/null 2>&1 \
-		&& git push --tags --force gitee >/dev/null 2>&1 \
-		&& printf 'push done\n' \
-		|| printf '::error::push failed\n' && return
+	&& git push --tags --force gitee >/dev/null 2>&1 \
+	&& printf 'push done\n' \
+	|| {
+		printf '::error::push failed\n' && return
+	}
 }
 
 # main
