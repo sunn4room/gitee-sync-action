@@ -32,10 +32,12 @@ mirror_repo() {
 		git branch --track ${BRANCH##*/} $BRANCH >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
-	git push --all --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push failed" && return
+	git push --all --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push commits failed" && return
+	git push --tags --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push tags failed" && return
 }
 
 # main
+git config --global init.defaultBranch main >/dev/null
 printf '%s' "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
 	parse_repo "$LINE" | while IFS= read -r REPO; do
 		mirror_repo "${REPO}"
