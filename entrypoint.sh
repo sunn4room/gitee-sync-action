@@ -6,7 +6,7 @@ parse_repo() {
 	else
 		COUNT=0
 		while true; do
-			COUNT=$(($COUNT + 1))
+			COUNT=$((COUNT + 1))
 			OUTPUT="$(curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name)"
 			printf '%s\n' "$OUTPUT"
 			if test "$(printf '%s' "$OUTPUT" | wc -l)" -lt "100"; then
@@ -24,16 +24,20 @@ mirror_repo() {
 		printf '::error::%s\n' "source repo not found" && return
 	fi
 	TMPDIR="$(mktemp -d)"
-	cd "$TMPDIR"
+	cd "$TMPDIR" || true
 	git init >/dev/null
 	git remote add source "$SOURCE_REPO" >/dev/null
-	git fetch --all >/dev/null 2>&1 || printf '::error::%s\n' "source repo fetch failed" && return
-	for BRANCH in "$(git branch -a | grep remotes | grep -v HEAD)"; do
-		git branch --track ${BRANCH##*/} $BRANCH >/dev/null
+	git fetch --all >/dev/null 2>&1 \
+		&& printf 'pull done\n' \
+		|| printf '::error::pull failed\n' && return
+	for BRANCH in $(git branch -a | grep remotes | grep -v HEAD); do
+		git branch --track "${BRANCH##*/}" "$BRANCH" >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
-	git push --all --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push commits failed" && return
-	git push --tags --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push tags failed" && return
+	git push --all --force gitee >/dev/null 2>&1 \
+		&& git push --tags --force gitee >/dev/null 2>&1 \
+		&& printf 'push done\n' \
+		|| printf '::error::push failed\n' && return
 }
 
 # main
