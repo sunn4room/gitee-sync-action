@@ -1,5 +1,5 @@
 #!/bin/sh -l
 
-echo "$INPUG_REPOSITORIES"
+echo "$INPUT_REPOSITORIES"
 
 exit 0
