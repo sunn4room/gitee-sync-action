@@ -2,14 +2,13 @@
 
 parse_repo() {
 	if expr "$1" : '[^/]*/[^/]*$' >/dev/null; then
-		echo "$1"
+		printf '%s\n' "$1"
 	else
 		COUNT=0
 		while true; do
 			COUNT=$(($COUNT + 1))
-			curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name
 			OUTPUT="$(curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name)"
-			printf '%s' "$OUTPUT"
+			printf '%s\n' "$OUTPUT"
 			if test "$(printf '%s' "$OUTPUT" | wc -l)" -lt "100"; then
 				break
 			fi
@@ -19,7 +18,7 @@ parse_repo() {
 
 printf '%s' "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
 	parse_repo "$LINE" | while IFS= read -r REPO; do
-		echo "[${REPO}]"
+		printf '%s\n' "[${REPO}]"
 	done
 done
 
