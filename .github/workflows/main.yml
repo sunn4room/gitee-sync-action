@@ -17,4 +17,3 @@ jobs:
           password: ${{ secrets.GITEE_PASSWORD }}
           repositories: |
             sunn4mirror
-            sunn4import
