@@ -18,11 +18,21 @@ parse_repo() {
 
 mirror_repo() {
 	printf '%s\n' "[$1]"
-	GITEE_REPO="https://gitee.com/$1.git"
+	GITEE_REPO="https://${INPUT_USERNAME}:${INPUT_PASSWORD}@gitee.com/$1.git"
 	SOURCE_REPO="$(curl -s "https://gitee.com/api/v5/repos/$1" | jq -r .description)"
 	if ! expr "$SOURCE_REPO" : "https://" >/dev/null; then
-		printf '::error::%s\n' "$1"
+		printf '::error::%s\n' "source repo not found" && return
 	fi
+	TMPDIR="$(mktemp -d)"
+	cd "$TMPDIR"
+	git init >/dev/null
+	git remote add source "$SOURCE_REPO" >/dev/null
+	git fetch --all >/dev/null 2>&1 || printf '::error::%s\n' "source repo fetch failed" && return
+	for BRANCH in "$(git branch -a | grep remotes | grep -v HEAD)"; do
+		git branch --track ${BRANCH##*/} $BRANCH >/dev/null
+	done
+	git remote add gitee "$GITEE_REPO" >/dev/null
+	git push --all --force gitee >/dev/null 2>&1 || printf '::error::%s\n' "gitee repo push failed" && return
 }
 
 # main
