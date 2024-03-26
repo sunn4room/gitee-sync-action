@@ -4,8 +4,15 @@ parse_repo() {
 	if expr "$1" : '[^/]*/[^/]*$' >/dev/null; then
 		echo "$1"
 	else
-		echo "$1/111"
-		echo "$1/222"
+		COUNT=0
+		while true; do
+			COUNT="$(expr "$COUNT" + 1)"
+			OUTPUT="$(curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].name)"
+			printf "$OUTPUT"
+			if test "$(printf "$OUTPUT" | wc -l)" -lt "100"; then
+				break;
+			fi
+		done
 	fi
 }
 
