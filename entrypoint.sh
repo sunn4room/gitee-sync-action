@@ -1,5 +1,7 @@
 #!/bin/sh -l
 
-echo "$INPUT_REPOSITORIES"
+echo -n "$INPUT_REPOSITORIES" | while IFS= read -r REPO; do
+	echo "$REPO"
+done
 
 exit 0
