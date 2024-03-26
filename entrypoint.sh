@@ -16,9 +16,18 @@ parse_repo() {
 	fi
 }
 
+mirror_repo() {
+	printf '%s\n' "[$1]"
+	GITEE_REPO="https://gitee.com/$1.git"
+	printf '%s\n' "$GITEE_REPO"
+	SOURCE_REPO="$(curl -s "https://gitee.com/api/v5/repos/$1" | jq -r .description)"
+	printf '%s\n' "$SOURCE_REPO"
+}
+
+# main
 printf '%s' "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
 	parse_repo "$LINE" | while IFS= read -r REPO; do
-		printf '%s\n' "[${REPO}]"
+		mirror_repo "${REPO}"
 	done
 done
 
