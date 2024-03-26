@@ -19,9 +19,10 @@ parse_repo() {
 mirror_repo() {
 	printf '%s\n' "[$1]"
 	GITEE_REPO="https://gitee.com/$1.git"
-	printf '%s\n' "$GITEE_REPO"
 	SOURCE_REPO="$(curl -s "https://gitee.com/api/v5/repos/$1" | jq -r .description)"
-	printf '%s\n' "$SOURCE_REPO"
+	if ! expr "$SOURCE_REPO" : "https://" >/dev/null; then
+		printf '::error::%s\n' "$1"
+	fi
 }
 
 # main
