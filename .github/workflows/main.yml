@@ -1,0 +1,14 @@
+name: Gitee Sync
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 16 * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: sync
+        uses: sunn4room/gitee-sync-action@main

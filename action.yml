@@ -1,0 +1,6 @@
+name: Gitee Sync Action
+author: sunn4room
+
+runs:
+  using: docker
+  image: Dockerfile
