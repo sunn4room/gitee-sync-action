@@ -7,20 +7,19 @@ parse_repo() {
 		COUNT=0
 		echo "$1"
 		while true; do
-			COUNT="$(expr "$COUNT" + 1)"
-			curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name
+			COUNT="$(("$COUNT" + 1))"
 			OUTPUT="$(curl -s "https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$COUNT" | jq -r .[].full_name)"
-			printf "$OUTPUT"
-			if test "$(printf "$OUTPUT" | wc -l)" -lt "100"; then
+			printf '%s' "$OUTPUT"
+			if test "$(printf '%s' "$OUTPUT" | wc -l)" -lt "100"; then
 				break
 			fi
 		done
 	fi
 }
 
-printf "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
+printf '%s' "$INPUT_REPOSITORIES" | while IFS= read -r LINE; do
 	parse_repo "$LINE" | while IFS= read -r REPO; do
-		echo "$REPO"
+		echo "[${REPO}]"
 	done
 done
 
