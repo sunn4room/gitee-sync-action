@@ -32,7 +32,7 @@ mirror_repo() {
 	|| {
 		printf '::error::pull failed\n' && return
 	}
-	git branch -a | grep remotes | grep -v HEAD | while IFS= read -r BRANCH; do
+	git branch -a | grep remotes | grep -v HEAD | awk '{print $1}' | while IFS= read -r BRANCH; do
 		git branch --track "${BRANCH##*/}" "$BRANCH" >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
