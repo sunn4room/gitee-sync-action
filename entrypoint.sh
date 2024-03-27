@@ -28,7 +28,7 @@ mirror_repo() {
 	}
 	cd "$(mktemp -d)"
 	git init >/dev/null
-	git add remote source "$SOURCE_REPO" >/dev/null
+	git remote add source "$SOURCE_REPO" >/dev/null
 	git fetch --all >/dev/null 2>&1 && printf 'pull done\n' || {
 		RETURN_CODE=1
 		printf '::error::pull failed\n' && return
