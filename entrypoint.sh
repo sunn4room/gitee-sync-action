@@ -32,7 +32,6 @@ mirror_repo() {
 	printf '%s\n' "[$1]"
 	GITEE_REPO="https://${INPUT_USERNAME}:${INPUT_PASSWORD}@gitee.com/$1.git"
 	URL="https://gitee.com/api/v5/repos/$1"
-	curl -s "https://gitee.com/api/v5/repos/$1"
 	curl -s --retry 5 "${URL}" >"$TEMPFILE" || {
 		RETURN_CODE=1
 		printf '::error::%s\n' "failed to fetch data from ${URL}" >&2
@@ -48,7 +47,7 @@ mirror_repo() {
 	cd "${TEMPDIR}" || true
 	git init >/dev/null
 	git remote add source "$SOURCE_REPO" >/dev/null
-	git fetch --all >/dev/null 2>&1 && printf 'pull done\n' || {
+	git fetch --all >/dev/null 2>&1 && printf '%s\n' "pull done" || {
 		RETURN_CODE=1
 		printf '::error::%s\n' "failed to pull data from ${SOURCE_REPO}" >&2
 		return
@@ -57,7 +56,7 @@ mirror_repo() {
 		git branch --track "${BRANCH##*/}" "$BRANCH" >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
-	git push --all --force gitee >/dev/null 2>&1 && git push --tags --force gitee >/dev/null 2>&1 && printf 'push done\n' || {
+	git push --all --force gitee >/dev/null 2>&1 && git push --tags --force gitee >/dev/null 2>&1 && printf '%s\n' "push done" || {
 		RETURN_CODE=1
 		printf '::error::%s\n' "failed to push data to ${GITEE_REPO}" >&2
 		return
