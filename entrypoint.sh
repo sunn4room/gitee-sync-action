@@ -1,5 +1,6 @@
 #!/bin/sh -l
 # shellcheck disable=SC2015
+# shellcheck disable=SC2164
 
 TEMPFILE="$(mktemp)"
 
@@ -11,11 +12,11 @@ parse_repo() {
 		while true; do
 			PAGE=$((PAGE + 1))
 			URL="https://gitee.com/api/v5/orgs/$1/repos?type=all&per_page=100&page=$PAGE"
-			curl -s --retry 5 "${URL}" >"$TEMPFILE" || {
+			if ! curl -s --retry 5 "${URL}" >"$TEMPFILE"; then
 				RETURN_CODE=1
 				printf '::error::%s\n' "failed to fetch data from ${URL}" >&2
 				break
-			}
+			fi
 			COUNT=0
 			for ITEM in $(jq -r '.[].full_name' "${TEMPFILE}"); do
 				printf '%s\n' "$ITEM"
@@ -29,39 +30,44 @@ parse_repo() {
 }
 
 mirror_repo() {
-	echo "--------"
-	printf '%s\n' "[$1]"
 	GITEE_REPO="https://${INPUT_USERNAME}:${INPUT_PASSWORD}@gitee.com/$1.git"
 	URL="https://gitee.com/api/v5/repos/$1"
-	curl -s --retry 5 "${URL}" >"$TEMPFILE" || {
+	if curl -s --retry 5 "${URL}" >"$TEMPFILE"; then
+		SOURCE_REPO="$(jq -r '.description' "${TEMPFILE}")"
+	else
 		RETURN_CODE=1
-		printf '::error::%s\n' "failed to fetch data from ${URL}" >&2
+		printf '::error::[%s] %s\n' "$1" "failed to fetch info" >&2
 		return
-	}
-	SOURCE_REPO="$(jq -r '.description' "${TEMPFILE}")"
-	expr "$SOURCE_REPO" : "https://" >/dev/null || {
+	fi
+	if expr "$SOURCE_REPO" : "https://" >/dev/null; then
+		printf '[%s] %s\n' "$1" "$SOURCE_REPO"
+	else
 		RETURN_CODE=1
-		printf '::error::%s\n' "source not found for ${GITEE_REPO}" >&2
+		printf '::error::[%s] %s\n' "$1" "source not found in info" >&2
 		return
-	}
+	fi
 	TEMPDIR="$(mktemp -d)"
-	cd "${TEMPDIR}" || true
+	cd "${TEMPDIR}"
 	git init >/dev/null
 	git remote add source "$SOURCE_REPO" >/dev/null
-	git fetch --all >/dev/null 2>&1 && printf '%s\n' "pull done" || {
+	if git fetch --all >/dev/null 2>&1; then
+		printf '[%s] %s\n' "$1" "pull done"
+	else
 		RETURN_CODE=1
-		printf '::error::%s\n' "failed to pull data from ${SOURCE_REPO}" >&2
+		printf '::error::[%s] %s\n' "$1" "failed to pull from source" >&2
 		return
-	}
+	fi
 	git branch -a | grep remotes | grep -v HEAD | awk '{print $1}' | while IFS= read -r BRANCH; do
 		git branch --track "${BRANCH##*/}" "$BRANCH" >/dev/null
 	done
 	git remote add gitee "$GITEE_REPO" >/dev/null
-	git push --all --force gitee >/dev/null 2>&1 && git push --tags --force gitee >/dev/null 2>&1 && printf '%s\n' "push done" || {
+	if git push --all --force gitee >/dev/null 2>&1 && git push --tags --force gitee >/dev/null 2>&1; then
+		printf '[%s] %s\n' "$1" "push done"
+	else
 		RETURN_CODE=1
-		printf '::error::%s\n' "failed to push data to ${GITEE_REPO}" >&2
+		printf '::error::[%s] %s\n' "$1" "failed to push data to gitee" >&2
 		return
-	}
+	fi
 	rm -rf "${TEMPDIR}"
 }
 
