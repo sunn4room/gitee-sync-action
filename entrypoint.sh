@@ -29,6 +29,7 @@ parse_repo() {
 }
 
 mirror_repo() {
+	echo "--------"
 	printf '%s\n' "[$1]"
 	GITEE_REPO="https://${INPUT_USERNAME}:${INPUT_PASSWORD}@gitee.com/$1.git"
 	URL="https://gitee.com/api/v5/repos/$1"
